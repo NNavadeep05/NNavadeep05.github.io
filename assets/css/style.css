@@ -140,6 +140,7 @@ h1, h2, h3 { margin: 0; font-weight: 400; }
 .monogram:hover { text-shadow: 0 0 14px var(--red-glow); }
 
 .tabs {
+  position: relative;
   display: flex;
   gap: 4px;
   padding: 4px;
@@ -151,6 +152,8 @@ h1, h2, h3 { margin: 0; font-weight: 400; }
 }
 
 .tab {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -165,11 +168,25 @@ h1, h2, h3 { margin: 0; font-weight: 400; }
   transition: background-color 0.25s var(--ease), color 0.25s var(--ease);
 }
 .tab:hover { color: var(--text); background: rgba(185, 220, 255, 0.1); }
-.tab.is-active {
-  background: var(--pill);
+.tab.is-active,
+.tab.is-active:hover {
+  background: transparent;
   color: var(--pill-text);
-  box-shadow: 0 0 18px rgba(185, 220, 255, 0.35);
 }
+
+/* Filled pill that slides between tabs */
+.tab-indicator {
+  position: absolute;
+  top: 4px; left: 0;
+  height: calc(100% - 8px);
+  width: 0;
+  background: var(--pill);
+  border-radius: 999px;
+  box-shadow: 0 0 18px rgba(185, 220, 255, 0.35);
+  opacity: 0;
+  transition: transform 0.45s var(--ease), width 0.45s var(--ease), opacity 0.3s var(--ease);
+}
+.tab-indicator.is-on { opacity: 1; }
 
 /* ==========================================================
    Screens and slides
@@ -523,8 +540,18 @@ h1, h2, h3 { margin: 0; font-weight: 400; }
   gap: 16px;
 }
 .entries li {
+  position: relative;
   padding-left: 14px;
-  border-left: 2px solid var(--line-strong);
+}
+/* Timeline line; anim.js draws it down by tweening --draw */
+.entries li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--line-strong);
+  transform-origin: top;
+  transform: scaleY(var(--draw, 1));
 }
 .e-title {
   font-weight: 600;
@@ -787,6 +814,67 @@ h1, h2, h3 { margin: 0; font-weight: 400; }
 }
 .js .reveal--left { transform: translateX(-24px); }
 .js .reveal.is-in { opacity: 1; transform: none; }
+
+/* ==========================================================
+   Scroll animation support (anim.js with GSAP)
+   ========================================================== */
+/* GSAP takes over from the simple CSS reveal */
+.js.has-gsap .reveal,
+.js.has-gsap .reveal--left {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* CSS transform transitions would lag behind GSAP, so keep only colour and glow */
+.has-gsap .tile { transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease); }
+.has-gsap .btn { transition: box-shadow 0.25s var(--ease); }
+
+/* Lenis smooth scroll */
+html.lenis,
+html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* Split letters keep the silver look on each letter */
+.split-word {
+  display: inline-flex;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.silver.is-split {
+  background: none;
+  -webkit-text-fill-color: initial;
+}
+.ch {
+  display: inline-block;
+  background-image:
+    linear-gradient(110deg, transparent 40%, rgba(255, 255, 255, 0.95) 50%, transparent 60%),
+    linear-gradient(180deg, #ffffff 0%, #e4e8ee 30%, #a9b0bc 52%, #7d8592 56%, #c3c9d2 78%, #eef1f5 100%);
+  background-size: 300% 100%, 100% 100%;
+  background-position: 150% 0, 0 0;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  will-change: transform;
+}
+.silver--soft .ch {
+  background-image:
+    linear-gradient(110deg, transparent 40%, rgba(255, 255, 255, 0.9) 50%, transparent 60%),
+    linear-gradient(180deg, #e9ecf1, #9aa2ae);
+}
+.shine .ch {
+  animation: shine 1.4s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 0.05s);
+}
+@keyframes shine {
+  from { background-position: 150% 0, 0 0; }
+  to   { background-position: -50% 0, 0 0; }
+}
 
 /* ==========================================================
    Responsive

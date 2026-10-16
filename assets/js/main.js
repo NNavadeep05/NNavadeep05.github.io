@@ -26,16 +26,33 @@
     .map(function (id) { return document.getElementById(id); })
     .filter(Boolean);
 
+  var indicator = document.querySelector('.tab-indicator');
+
+  // Slide the pill under the active tab, or hide it on the title screen
+  function moveIndicator(tab) {
+    if (!indicator) return;
+    if (!tab) {
+      indicator.classList.remove('is-on');
+      return;
+    }
+    indicator.style.width = tab.offsetWidth + 'px';
+    indicator.style.transform = 'translateX(' + tab.offsetLeft + 'px)';
+    indicator.classList.add('is-on');
+  }
+
   function setActive(id) {
+    var activeTab = null;
     tabs.forEach(function (tab) {
       var on = tab.getAttribute('data-tab') === id;
       tab.classList.toggle('is-active', on);
       if (on) {
+        activeTab = tab;
         tab.setAttribute('aria-current', 'location');
       } else {
         tab.removeAttribute('aria-current');
       }
     });
+    moveIndicator(activeTab);
   }
 
   function updateActive() {
